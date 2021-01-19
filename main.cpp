@@ -5,7 +5,7 @@
 
 enum class Color { white, black };
 enum class Enemy{ random, heuristic, minmax };
-typedef struct tile {
+typedef struct Tile {
 	int row;
 	int col;
 }tile;
@@ -107,44 +107,208 @@ bool check_valid_input(const std::string input) {
 	return true;
 }
 
-tile string_to_tile(const std::string& input)					
+Tile string_to_tile(const std::string& input)					
 {
-	tile output;
-	output.row = static_cast<int>(input[0] - 1);
+	Tile output;
+	char temp = input[0];
+	output.row = temp - '1';
 	output.col = static_cast<int>(input[1] - 'A');
 	return output;
 }
 
-std::string tile_to_string(const tile& input)			
+std::string tile_to_string(const Tile& input)			
 {
 	std::string output;
-	output += static_cast<char>(input.row + 1);
+	output += std::to_string(input.row + 1);
 	output += static_cast<char>(input.col + 'A');
 	return output;
 }
 
-
-bool update_game(const std::vector<std::vector<char>>& game, const tile& new_move, const Color& color);
-
-std::vector<tile> find_valid_moves(const std::vector<std::vector<char>>& game, const Color& on_turn)
+void print_possible_moves(const std::vector<tile> moves)
 {
-	if (on_turn == Color::white && !game.empty())
-		return std::vector<tile>{};
-	else
-		return std::vector<tile>{};
-	/*for (size_t i = 0 ; i < 8; i++)
-		for (size_t j = 0; j < 8; j++)
+	std::cout<<"Possible moves are:\n";
+	for (size_t i = 0; i < moves.size(); i++)
+		std::cout << tile_to_string(moves[i]) << "\n";
+}
+
+bool check_move_valid(std::vector<std::vector<char>> game, const Tile& tile, const Color& color)
+{
+	char enemy_piece, friendly_piece;
+
+	if (color == Color::black) {
+		game[tile.row][tile.col] = 'X';
+		enemy_piece = 'O';
+		friendly_piece = 'X';
+	}
+	else {
+		game[tile.row][tile.col] = 'O';
+		enemy_piece = 'X';
+		friendly_piece = 'O';
+	}
+
+	//up
+	if (tile.row - 1 >= 0 && game[tile.row - 1][tile.col] == enemy_piece) {
+		for (int i = tile.row - 1 ; i >= 0 ; i--)
+			if (game[i][tile.col] == friendly_piece)
+				return true;
+	}
+
+	//down
+	if (tile.row + 1 <= 7 && game[tile.row + 1][tile.col] == enemy_piece) {
+		for (int i = tile.row + 1; i <= 7; i++)
+			if (game[i][tile.col] == friendly_piece)
+				return true;
+	}
+
+	//left
+	if (tile.col - 1 >= 0 && game[tile.row][tile.col - 1] == enemy_piece) {
+		for (int i = tile.col - 1; i >= 0; i--)
+			if (game[tile.row][i] == friendly_piece)
+				return true;
+	}
+
+	//right
+	if (tile.col + 1 <= 7 && game[tile.row][tile.col + 1] == enemy_piece) {
+		for (int i = tile.col + 1; i <= 7; i++)
+			if (game[tile.row][i] == friendly_piece)
+				return true;
+	}
+
+	//up left
+	if (tile.row - 1 >= 0 && tile.col -1 >= 0 && game[tile.row -1][tile.col -1] == enemy_piece)
+		for (int i = tile.row - 1, j = tile.col - 1; i >= 0 && j >= 0; i-- , j--)
+			if (game[i][j] == friendly_piece)
+				return true;
+
+	//up right
+	if (tile.row - 1 >= 0 && tile.col + 1 <= 7 && game[tile.row - 1][tile.col + 1] == enemy_piece)
+		for (int i = tile.row - 1, j = tile.col + 1; i >= 0 && j <= 7; i--, j++)
+			if (game[i][j] == friendly_piece)
+				return true;
+
+	//down left
+	if (tile.row + 1 <= 7 && tile.col - 1 >= 0 && game[tile.row + 1][tile.col - 1] == enemy_piece)
+		for (int i = tile.row + 1, j = tile.col - 1; i <= 7 && j >= 0; i++, j--)
+			if (game[i][j] == friendly_piece)
+				return true;
+
+	//down right
+	if (tile.row + 1 <= 7 && tile.col + 1 <= 7 && game[tile.row + 1][tile.col + 1] == enemy_piece)
+		for (int i = tile.row + 1, j = tile.col + 1; i <= 7 && j <= 7; i++, j++)
+			if (game[i][j] == friendly_piece)
+				return true;
+
+	return false;
+}
+
+std::vector<Tile> find_possible_moves(const std::vector<std::vector<char>>& game, const Color& color)
+{
+
+	std::vector<Tile> valid_moves;
+
+	for (int i = 0 ; i < 8; i++)
+		for (int j = 0; j < 8; j++)
 		{
 			if (game[i][j] != '-')
 				continue;
 
-			if (on_turn == Color::black) {
-				;
+			Tile current_move;
+			current_move.row = i;
+			current_move.col = j;
+			if (check_move_valid(game, current_move, color))
+			{
+				valid_moves.push_back(current_move);
 			}
-		}*/
+		}
+	return valid_moves;
 }
 
-void player_turn(std::vector<std::vector<char>> game,const std::vector<tile>& possible_moves)
+void update_game(std::vector<std::vector<char>>& game, const Tile& tile, const Color& color)
+{
+	char enemy_piece, friendly_piece;
+
+	if (color == Color::black) {
+		game[tile.row][tile.col] = 'X';
+		enemy_piece = 'O';
+		friendly_piece = 'X';
+	}
+	else {
+		game[tile.row][tile.col] = 'O';
+		enemy_piece = 'X';
+		friendly_piece = 'O';
+	}
+
+	//up
+	if (tile.row - 1 >= 0 && game[tile.row - 1][tile.col] == enemy_piece) {
+		for (int i = tile.row - 1; i >= 0; i--)
+			if (game[i][tile.col] == friendly_piece)
+			{
+				for (int j = i; j <= tile.row - 1; j++)
+					game[j][tile.col] = friendly_piece;
+				break;
+			}
+	}
+
+	//down
+	if (tile.row + 1 <= 7 && game[tile.row + 1][tile.col] == enemy_piece) {
+		for (int i = tile.row + 1; i <= 7; i++)
+			if (game[i][tile.col] == friendly_piece)
+			{
+				for (int j = i; j >= tile.row + 1; j--)
+					game[j][tile.col] = friendly_piece;
+				break;
+			}
+	}
+
+	//left
+	if (tile.col - 1 >= 0 && game[tile.row][tile.col - 1] == enemy_piece) {
+		for (int i = tile.col - 1; i >= 0; i--)
+			if (game[tile.row][i] == friendly_piece)
+			{
+				for (int j = i; j <= tile.col - 1; j++)
+					game[tile.row][j] = friendly_piece;
+				break;
+			}
+	}
+
+	//right
+	if (tile.col + 1 <= 7 && game[tile.row][tile.col + 1] == enemy_piece) {
+		for (int i = tile.col + 1; i <= 7; i++)
+			if (game[tile.row][i] == friendly_piece)
+			{
+				for (int j = i; j >= tile.col + 1; j--)
+					game[tile.row][j] = friendly_piece;
+				break;
+			}
+	}
+
+	//up left
+	if (tile.row - 1 >= 0 && tile.col - 1 >= 0 && game[tile.row - 1][tile.col - 1] == enemy_piece)
+		for (int i = tile.row - 1, j = tile.col - 1; i >= 0 && j >= 0; i--, j--)
+			if (game[i][j] == friendly_piece)
+				return;// return true;
+
+	//up right
+	if (tile.row - 1 >= 0 && tile.col + 1 <= 7 && game[tile.row - 1][tile.col + 1] == enemy_piece)
+		for (int i = tile.row - 1, j = tile.col + 1; i >= 0 && j <= 7; i--, j++)
+			if (game[i][j] == friendly_piece)
+				return;// return true;
+
+	//down left
+	if (tile.row + 1 <= 7 && tile.col - 1 >= 0 && game[tile.row + 1][tile.col - 1] == enemy_piece)
+		for (int i = tile.row + 1, j = tile.col - 1; i <= 7 && j >= 0; i++, j--)
+			if (game[i][j] == friendly_piece)
+				return;// return true;
+
+	//down right
+	if (tile.row + 1 <= 7 && tile.col + 1 <= 7 && game[tile.row + 1][tile.col + 1] == enemy_piece)
+		for (int i = tile.row + 1, j = tile.col + 1; i <= 7 && j <= 7; i++, j++)
+			if (game[i][j] == friendly_piece)
+				return;// return true;
+
+}
+
+void player_turn(std::vector<std::vector<char>>& game,const std::vector<Tile>& possible_moves, const Color& color)
 {
 	std::string input;
 	std::cout << "Your turn!\n";
@@ -158,7 +322,7 @@ void player_turn(std::vector<std::vector<char>> game,const std::vector<tile>& po
 			std::cout << "Invalid input format. Try again.\n";
 			continue;
 		}
-		tile selected_move = string_to_tile(input);
+		Tile selected_move = string_to_tile(input);
 
 		bool valid = false;
 		for (auto move : possible_moves)
@@ -168,12 +332,16 @@ void player_turn(std::vector<std::vector<char>> game,const std::vector<tile>& po
 				break;
 			}
 		}
-		if (valid)
+		if (valid) {
+			update_game(game, selected_move, color);
 			break;
+		}
 		else
+		{
 			std::cout << "Invalid move. Try again.\n";
+			print_possible_moves(possible_moves);
+		}
 	}
-//update_game(game_board,selected_move);
 }
 
 int main()
@@ -192,7 +360,7 @@ int main()
 		bool white_skip = false;
 
 		on_turn = Color::black;
-		std::vector<tile> possible_moves_black = find_valid_moves(game_board, on_turn);
+		std::vector<Tile> possible_moves_black = find_possible_moves(game_board, on_turn);
 		if (possible_moves_black.empty())
 		{
 			std::cout << "No available moves for black player.\n";
@@ -200,7 +368,7 @@ int main()
 		}
 		else {
 			if (player_color == Color::black)
-				player_turn(game_board,possible_moves_black);
+				player_turn(game_board,possible_moves_black,player_color);
 			else
 				;//enemy_make_turn
 		}
@@ -208,7 +376,7 @@ int main()
 		print_game(game_board);
 
 		on_turn = Color::white;
-		std::vector<tile> possible_moves_white = find_valid_moves(game_board, on_turn);
+		std::vector<Tile> possible_moves_white = find_possible_moves(game_board, on_turn);
 		// find possible moves
 		if (possible_moves_white.empty())
 		{
@@ -217,7 +385,7 @@ int main()
 		}
 		else {
 			if (player_color == Color::white)
-				player_turn(game_board,possible_moves_white);
+				player_turn(game_board,possible_moves_white,player_color);
 			else
 				;//enemy_make_turn
 		}
@@ -226,49 +394,7 @@ int main()
 
 		if (black_skip && white_skip)
 			break;
-
-		/*if (player_color == Color::black)
-		{
-			std::vector<tile> possible_moves;
-			// find possible moves
-			if (possible_moves.empty())
-			{
-				std::cout << "No available moves for black player.\n";
-				black_skip = true;
-			}
-			else 
-				player
-				/*std::string input;
-				std::cout << "Your turn!\n";
-				while (true)
-				{
-					std::cout << "Enter the row and column of the new piece: (example: 1A)\n";
-					std::cin >> input;
-					input[1] = static_cast<char>(toupper(input[1]));
-					if (!check_valid_input(input))
-					{
-						std::cout << "Invalid input format. Try again.\n";
-						continue;
-					}
-					tile selected_move = string_to_tile(input);
-
-					bool valid = false;
-					for (auto move : possible_moves)
-					{
-						if (move.col == selected_move.col && move.row == selected_move.row) {
-							valid = true;
-							break;
-						}
-					}
-					if (valid)
-						break;
-					else
-						std::cout << "Invalid move. Try again.\n";
-				}
-			}
-			//update_game(game_board,selected_move);
-		}*/
 	}
-	std::cout << "game has ended.\n";
+	std::cout << "Game has ended.\n";
 	return 0;
 }
