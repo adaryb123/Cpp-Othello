@@ -147,56 +147,78 @@ bool check_move_valid(std::vector<std::vector<char>> game, const Tile& tile, con
 	}
 
 	//up
-	if (tile.row - 1 >= 0 && game[tile.row - 1][tile.col] == enemy_piece) {
-		for (int i = tile.row - 1 ; i >= 0 ; i--)
+	if (tile.row - 1 >= 0 && game[tile.row - 1][tile.col] == enemy_piece) 
+		for (int i = tile.row - 1; i >= 0; i--) {
 			if (game[i][tile.col] == friendly_piece)
 				return true;
-	}
+			else if (game[i][tile.col] == '-')
+				break;
+		}
+	
 
 	//down
-	if (tile.row + 1 <= 7 && game[tile.row + 1][tile.col] == enemy_piece) {
-		for (int i = tile.row + 1; i <= 7; i++)
+	if (tile.row + 1 <= 7 && game[tile.row + 1][tile.col] == enemy_piece) 
+		for (int i = tile.row + 1; i <= 7; i++) {
 			if (game[i][tile.col] == friendly_piece)
 				return true;
-	}
+			else if (game[i][tile.col] == '-')
+				break;
+		}
+	
 
 	//left
-	if (tile.col - 1 >= 0 && game[tile.row][tile.col - 1] == enemy_piece) {
-		for (int i = tile.col - 1; i >= 0; i--)
+	if (tile.col - 1 >= 0 && game[tile.row][tile.col - 1] == enemy_piece) 
+		for (int i = tile.col - 1; i >= 0; i--) {
 			if (game[tile.row][i] == friendly_piece)
 				return true;
-	}
+			else if (game[tile.row][i] == '-')
+				break;
+		}
 
 	//right
-	if (tile.col + 1 <= 7 && game[tile.row][tile.col + 1] == enemy_piece) {
-		for (int i = tile.col + 1; i <= 7; i++)
+	if (tile.col + 1 <= 7 && game[tile.row][tile.col + 1] == enemy_piece) 
+		for (int i = tile.col + 1; i <= 7; i++){
 			if (game[tile.row][i] == friendly_piece)
 				return true;
-	}
+			else if (game[tile.row][i] == '-')
+				break;
+		}
 
 	//up left
 	if (tile.row - 1 >= 0 && tile.col -1 >= 0 && game[tile.row -1][tile.col -1] == enemy_piece)
-		for (int i = tile.row - 1, j = tile.col - 1; i >= 0 && j >= 0; i-- , j--)
+		for (int i = tile.row - 1, j = tile.col - 1; i >= 0 && j >= 0; i--, j--) {
 			if (game[i][j] == friendly_piece)
 				return true;
+			else if (game[i][j] == '-')
+				break;
+		}
 
 	//up right
 	if (tile.row - 1 >= 0 && tile.col + 1 <= 7 && game[tile.row - 1][tile.col + 1] == enemy_piece)
-		for (int i = tile.row - 1, j = tile.col + 1; i >= 0 && j <= 7; i--, j++)
+		for (int i = tile.row - 1, j = tile.col + 1; i >= 0 && j <= 7; i--, j++) {
 			if (game[i][j] == friendly_piece)
 				return true;
+			else if (game[i][j] == '-')
+				break;
+		}
 
 	//down left
 	if (tile.row + 1 <= 7 && tile.col - 1 >= 0 && game[tile.row + 1][tile.col - 1] == enemy_piece)
-		for (int i = tile.row + 1, j = tile.col - 1; i <= 7 && j >= 0; i++, j--)
+		for (int i = tile.row + 1, j = tile.col - 1; i <= 7 && j >= 0; i++, j--) {
 			if (game[i][j] == friendly_piece)
 				return true;
+			else if (game[i][j] == '-')
+				break;
+		}
 
 	//down right
 	if (tile.row + 1 <= 7 && tile.col + 1 <= 7 && game[tile.row + 1][tile.col + 1] == enemy_piece)
-		for (int i = tile.row + 1, j = tile.col + 1; i <= 7 && j <= 7; i++, j++)
+		for (int i = tile.row + 1, j = tile.col + 1; i <= 7 && j <= 7; i++, j++) {
 			if (game[i][j] == friendly_piece)
 				return true;
+			else if (game[i][j] == '-')
+				break;
+		}
 
 	return false;
 }
@@ -239,72 +261,110 @@ void update_game(std::vector<std::vector<char>>& game, const Tile& tile, const C
 	}
 
 	//up
-	if (tile.row - 1 >= 0 && game[tile.row - 1][tile.col] == enemy_piece) {
-		for (int i = tile.row - 1; i >= 0; i--)
+	if (tile.row - 1 >= 0 && game[tile.row - 1][tile.col] == enemy_piece)
+		for (int i = tile.row - 1; i >= 0; i--) {
 			if (game[i][tile.col] == friendly_piece)
 			{
 				for (int j = i; j <= tile.row - 1; j++)
 					game[j][tile.col] = friendly_piece;
 				break;
 			}
-	}
+			else if (game[i][tile.col] == '-')
+				break;
+
+		}
 
 	//down
-	if (tile.row + 1 <= 7 && game[tile.row + 1][tile.col] == enemy_piece) {
-		for (int i = tile.row + 1; i <= 7; i++)
+	if (tile.row + 1 <= 7 && game[tile.row + 1][tile.col] == enemy_piece)
+		for (int i = tile.row + 1; i <= 7; i++) {
 			if (game[i][tile.col] == friendly_piece)
 			{
 				for (int j = i; j >= tile.row + 1; j--)
 					game[j][tile.col] = friendly_piece;
 				break;
 			}
-	}
+			else if (game[i][tile.col] == '-')
+				break;
+		}
 
 	//left
-	if (tile.col - 1 >= 0 && game[tile.row][tile.col - 1] == enemy_piece) {
-		for (int i = tile.col - 1; i >= 0; i--)
+	if (tile.col - 1 >= 0 && game[tile.row][tile.col - 1] == enemy_piece)
+		for (int i = tile.col - 1; i >= 0; i--) {
 			if (game[tile.row][i] == friendly_piece)
 			{
 				for (int j = i; j <= tile.col - 1; j++)
 					game[tile.row][j] = friendly_piece;
 				break;
 			}
-	}
+			else if (game[tile.row][i] == '-')
+				break;
+		}
 
 	//right
-	if (tile.col + 1 <= 7 && game[tile.row][tile.col + 1] == enemy_piece) {
-		for (int i = tile.col + 1; i <= 7; i++)
+	if (tile.col + 1 <= 7 && game[tile.row][tile.col + 1] == enemy_piece)
+		for (int i = tile.col + 1; i <= 7; i++) {
 			if (game[tile.row][i] == friendly_piece)
 			{
 				for (int j = i; j >= tile.col + 1; j--)
 					game[tile.row][j] = friendly_piece;
 				break;
 			}
-	}
+			else if (game[tile.row][i] == '-')
+				break;
+		}
 
 	//up left
 	if (tile.row - 1 >= 0 && tile.col - 1 >= 0 && game[tile.row - 1][tile.col - 1] == enemy_piece)
-		for (int i = tile.row - 1, j = tile.col - 1; i >= 0 && j >= 0; i--, j--)
+		for (int i = tile.row - 1, j = tile.col - 1; i >= 0 && j >= 0; i--, j--) {
 			if (game[i][j] == friendly_piece)
-				return;// return true;
+			{
+				for (int k = i, l = j; (k <= tile.row - 1) && (l <= tile.col - 1); k++, l++)
+					game[k][l] = friendly_piece;
+				break;
+			}
+			else if (game[i][j] == '-')
+				break;
+		}
 
 	//up right
 	if (tile.row - 1 >= 0 && tile.col + 1 <= 7 && game[tile.row - 1][tile.col + 1] == enemy_piece)
-		for (int i = tile.row - 1, j = tile.col + 1; i >= 0 && j <= 7; i--, j++)
+		for (int i = tile.row - 1, j = tile.col + 1; i >= 0 && j <= 7; i--, j++) {
 			if (game[i][j] == friendly_piece)
-				return;// return true;
+			{
+				for (int k = i, l = j; (k <= tile.row - 1) && (l >= tile.col + 1); k++, l--)
+					game[k][l] = friendly_piece;
+				break;
+			}
+			else if (game[i][j] == '-')
+				break;
+		}
+	
 
 	//down left
 	if (tile.row + 1 <= 7 && tile.col - 1 >= 0 && game[tile.row + 1][tile.col - 1] == enemy_piece)
-		for (int i = tile.row + 1, j = tile.col - 1; i <= 7 && j >= 0; i++, j--)
+		for (int i = tile.row + 1, j = tile.col - 1; i <= 7 && j >= 0; i++, j--) {
 			if (game[i][j] == friendly_piece)
-				return;// return true;
+			{
+				for (int k = i, l = j; (k >= tile.row + 1) && (l <= tile.col - 1); k--, l++)
+					game[k][l] = friendly_piece;
+				break;
+			}
+			else if (game[i][j] == '-')
+				break;
+		}
 
 	//down right
 	if (tile.row + 1 <= 7 && tile.col + 1 <= 7 && game[tile.row + 1][tile.col + 1] == enemy_piece)
-		for (int i = tile.row + 1, j = tile.col + 1; i <= 7 && j <= 7; i++, j++)
+		for (int i = tile.row + 1, j = tile.col + 1; i <= 7 && j <= 7; i++, j++) {
 			if (game[i][j] == friendly_piece)
-				return;// return true;
+			{
+				for (int k = i, l = j; (k >= tile.row + 1) && (l >= tile.col + 1); k--, l--)
+					game[k][l] = friendly_piece;
+				break;
+			}
+			else if (game[i][j] == '-')
+				break;
+		}
 
 }
 
@@ -370,7 +430,7 @@ int main()
 			if (player_color == Color::black)
 				player_turn(game_board,possible_moves_black,player_color);
 			else
-				;//enemy_make_turn
+				player_turn(game_board, possible_moves_black, enemy_color);;//enemy_make_turn
 		}
 
 		print_game(game_board);
@@ -387,7 +447,7 @@ int main()
 			if (player_color == Color::white)
 				player_turn(game_board,possible_moves_white,player_color);
 			else
-				;//enemy_make_turn
+				player_turn(game_board, possible_moves_white, enemy_color);//enemy_make_turn
 		}
 
 		print_game(game_board);
