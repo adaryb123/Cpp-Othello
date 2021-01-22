@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <string>
 #include <iostream>
+#include <time.h>
+#include <stdlib.h>
 
 enum class Color { white, black };
 enum class Enemy{ random, heuristic, minmax };
@@ -10,6 +12,7 @@ typedef struct Tile {
 	int col;
 }tile;
 
+/*user will set player color and type of enemy*/
 void assign_start_variables(Color& player_color, Enemy& enemy, Color& enemy_color) {
 	while (true) {
 		bool error = false;
@@ -91,6 +94,7 @@ void print_game(const std::vector<std::vector<char>>& game)
 	std::cout << "\n";
 }
 
+/* valid move format examples: 2A, 3h, 7d */
 bool check_valid_input(const std::string input) {
 	if (input.size() != 2)
 		return false;
@@ -107,6 +111,7 @@ bool check_valid_input(const std::string input) {
 	return true;
 }
 
+/* we use both string and structure representations for 1 tile of the game board*/
 Tile string_to_tile(const std::string& input)					
 {
 	Tile output;
@@ -131,6 +136,7 @@ void print_possible_moves(const std::vector<tile> moves)
 		std::cout << tile_to_string(moves[i]) << "\n";
 }
 
+/* Move is valid when the new placed tile and your existing tiles seals of 1 or more enemy tiles in horizontal, vertical, or diagonal lines*/
 bool check_move_valid(std::vector<std::vector<char>> game, const Tile& tile, const Color& color)
 {
 	char enemy_piece, friendly_piece;
@@ -245,6 +251,7 @@ std::vector<Tile> find_possible_moves(const std::vector<std::vector<char>>& game
 	return valid_moves;
 }
 
+/* add new placed tile and flip sealed enemy tiles*/
 void update_game(std::vector<std::vector<char>>& game, const Tile& tile, const Color& color)
 {
 	char enemy_piece, friendly_piece;
@@ -404,6 +411,49 @@ void player_turn(std::vector<std::vector<char>>& game,const std::vector<Tile>& p
 	}
 }
 
+void print_ending_message(const std::vector<std::vector<char>>& game, const Color& player_color)
+{
+	int black_tiles = 0, white_tiles = 0;
+	for (size_t i = 0; i < 8; i++)
+		for (size_t j = 0; j < 8; j++)
+		{
+			if (game[i][j] == 'O')
+				white_tiles++;
+			else if (game[i][j] == 'X')
+				black_tiles++;
+		}
+
+	std::cout << "Game ended!\n";
+	std::cout << "Black tiles: " << black_tiles << "\n";
+	std::cout << "White tiles: " << white_tiles << "\n";
+	if (black_tiles == white_tiles) {
+		std::cout << "Draw!\n";
+	}
+	else {
+		Color winner = player_color;
+		if (black_tiles > white_tiles)
+			winner = Color::black;
+		else if (white_tiles > black_tiles)
+			winner = Color::white;
+
+		if (winner == player_color)
+			std::cout << "You won!\n";
+		else
+			std::cout << "You lost!\n";
+	}
+}
+
+void enemy_turn_random(std::vector<std::vector<char>>& game, const std::vector<Tile>& possible_moves, const Color& color)
+{
+	std::cout << "Enemy turn!\n";
+	print_possible_moves(possible_moves);
+	srand(static_cast<int>(time(0)));
+	int index = (rand() % (static_cast<int>(possible_moves.size())));
+	Tile selected_move = possible_moves[index];
+	std::cout << "Selected move " << tile_to_string(selected_move) << " with index " << index << "\n";
+	update_game(game, selected_move, color);
+}
+
 int main()
 {
 	Color player_color, enemy_color;
@@ -430,7 +480,7 @@ int main()
 			if (player_color == Color::black)
 				player_turn(game_board,possible_moves_black,player_color);
 			else
-				player_turn(game_board, possible_moves_black, enemy_color);;//enemy_make_turn
+				enemy_turn_random(game_board, possible_moves_black, enemy_color);//enemy_make_turn
 		}
 
 		print_game(game_board);
@@ -447,7 +497,7 @@ int main()
 			if (player_color == Color::white)
 				player_turn(game_board,possible_moves_white,player_color);
 			else
-				player_turn(game_board, possible_moves_white, enemy_color);//enemy_make_turn
+				enemy_turn_random(game_board, possible_moves_white, enemy_color);//enemy_make_turn
 		}
 
 		print_game(game_board);
@@ -455,6 +505,6 @@ int main()
 		if (black_skip && white_skip)
 			break;
 	}
-	std::cout << "Game has ended.\n";
+	print_ending_message(game_board, player_color);
 	return 0;
 }
