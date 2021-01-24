@@ -443,6 +443,7 @@ void print_ending_message(const std::vector<std::vector<char>>& game, const Colo
 	}
 }
 
+/* select random move from the available moves */
 void enemy_turn_random(std::vector<std::vector<char>>& game, const std::vector<Tile>& possible_moves, const Color& color)
 {
 	std::cout << "Enemy turn!\n";
@@ -452,6 +453,70 @@ void enemy_turn_random(std::vector<std::vector<char>>& game, const std::vector<T
 	Tile selected_move = possible_moves[index];
 	std::cout << "Selected move " << tile_to_string(selected_move) << " with index " << index << "\n";
 	update_game(game, selected_move, color);
+}
+
+/* normal tile is worth 1 point, edge tile is worth 2 and corner is worth 3 */
+int get_tile_difference(const std::vector<std::vector<char>>& game, const Color& friendly)
+{
+	int black_tiles = 0, white_tiles = 0;
+	for (size_t i = 0; i < 8; i++)
+		for (size_t j = 0; j < 8; j++)
+		{
+			if (game[i][j] == 'O') 
+			{
+				if ((j == 0 || j == 7) && (i == 0 || i == 7))
+					white_tiles += 3;
+				else if (j == 0 || j == 7 || i == 0 || i == 7)
+					white_tiles += 2;
+				else
+					white_tiles++;
+			}
+			else if (game[i][j] == 'X')
+			{
+				if ((j == 0 || j == 7) && (i == 0 || i == 7))
+					black_tiles += 3;
+				else if (j == 0 || j == 7 || i == 0 || i == 7)
+					black_tiles += 2;
+				else
+					black_tiles++;
+			}
+		}
+
+	if (friendly == Color::black)
+		return black_tiles - white_tiles;
+	else
+		return white_tiles - black_tiles;
+}
+
+/* get heuristic value for each available move. We are counting tile difference minus number of available moves for enemy */
+int calculate_heuristic(std::vector<std::vector<char>> game, const Tile& current_move, const Color& friendly_color)
+{
+	Color enemy_color;
+	if (friendly_color == Color::black)
+		enemy_color = Color::white;
+	else
+		enemy_color = Color::black;
+
+	update_game(game, current_move, friendly_color);
+	return get_tile_difference(game, friendly_color) - static_cast<int>(find_possible_moves(game, enemy_color).size());
+}
+
+/* select the move with best heuristic value */
+void enemy_turn_heuristic(std::vector<std::vector<char>>& game, const std::vector<Tile>& possible_moves, const Color& color)
+{
+	int max = calculate_heuristic(game, possible_moves[0], color);
+	Tile best_move = possible_moves[0];
+	for (auto move : possible_moves)
+	{
+		int heuristic_val = calculate_heuristic(game, move, color);
+		//std::cout << "Move " << tile_to_string(move) << " heuristic value " << heuristic_val << '\n';
+		if (heuristic_val > max) {
+			max = heuristic_val;
+			best_move = move;
+		}
+	}
+	//std::cout << " Best move is " << tile_to_string(best_move) << " with heuristic value " << max << '\n';
+	update_game(game, best_move, color);
 }
 
 int main()
@@ -469,6 +534,7 @@ int main()
 		bool black_skip = false;
 		bool white_skip = false;
 
+		/* black's turn */
 		on_turn = Color::black;
 		std::vector<Tile> possible_moves_black = find_possible_moves(game_board, on_turn);
 		if (possible_moves_black.empty())
@@ -480,14 +546,18 @@ int main()
 			if (player_color == Color::black)
 				player_turn(game_board,possible_moves_black,player_color);
 			else
-				enemy_turn_random(game_board, possible_moves_black, enemy_color);//enemy_make_turn
+			{
+				if (enemy == Enemy::random)
+					enemy_turn_random(game_board, possible_moves_black, enemy_color);
+				else if (enemy == Enemy::heuristic)
+					enemy_turn_heuristic(game_board, possible_moves_black, enemy_color);
+			}
 		}
-
 		print_game(game_board);
 
+		/* white's turn */
 		on_turn = Color::white;
 		std::vector<Tile> possible_moves_white = find_possible_moves(game_board, on_turn);
-		// find possible moves
 		if (possible_moves_white.empty())
 		{
 			std::cout << "No available moves for white player.\n";
@@ -497,9 +567,13 @@ int main()
 			if (player_color == Color::white)
 				player_turn(game_board,possible_moves_white,player_color);
 			else
-				enemy_turn_random(game_board, possible_moves_white, enemy_color);//enemy_make_turn
+			{
+				if (enemy == Enemy::random)
+					enemy_turn_random(game_board, possible_moves_white, enemy_color);
+				else if (enemy == Enemy::heuristic)
+					enemy_turn_heuristic(game_board, possible_moves_white, enemy_color);
+			}
 		}
-
 		print_game(game_board);
 
 		if (black_skip && white_skip)
